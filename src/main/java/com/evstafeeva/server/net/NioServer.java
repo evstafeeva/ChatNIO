@@ -101,8 +101,7 @@ public class NioServer implements IChannel {
         //получаем канал, который хочет нам что-то сказать
         SocketChannel client = (SocketChannel) sKey.channel();
         System.out.println("читаем " + client.toString());
-        //TODO сделать оптимальннее, чтобы каждый раз не выделять заново
-        ByteBuffer buffer = ByteBuffer.allocate(2048);
+        ByteBuffer buffer = ByteBuffer.allocate(50);
         //читаем, что нам пришло (пытаемся)
         int read = 0;
         try {
@@ -116,7 +115,13 @@ public class NioServer implements IChannel {
         if (read < 0) {
             close(sessions.inverse().get(sKey));
         } else {//все-таки что-то пришло и все идет по плану
-            uplevel.onDataReceived(sessions.inverse().get(sKey), buffer.array());
+            byte[] data = buffer.array();
+            int endOfMessage= 0;
+            for(; endOfMessage < 50; endOfMessage ++){
+                if(data[endOfMessage] == 13)
+                    break;
+            }
+            uplevel.onDataReceived(sessions.inverse().get(sKey), ByteBuffer.allocate(endOfMessage).put(data, 0, endOfMessage).array());
         }
     }
 
@@ -163,7 +168,6 @@ public class NioServer implements IChannel {
 
     @Override
     public void close(int sessionId) {
-        //TODO проверить правильность закрытия примерно в конце реализации всего остального функционала
         SelectionKey sk = sessions.get(sessionId);
         sessions.remove(sessionId);
         SocketChannel client = (SocketChannel) sk.channel();

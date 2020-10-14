@@ -22,12 +22,12 @@ public class Chat implements ITerminal {
         //если проходит регистрация
         User user = users.get(sessionId);
         if (user.getName() == null) {
-            String name = getSentenceFromBytes(data);
+            String name = new String(data);
             user.setName(name);
             System.out.println("Пользователь " + sessionId + " представился под именем " + name);
         } else { //если просто рядовые сообщения в чати
             //формируем сообщение
-            String message = "[ " + user.getName() + " ] : "+ getSentenceFromBytes(data) + "\n";
+            String message = "[ " + user.getName() + " ] : "+ new String(data) + "\n";
             for (int userId : users.keySet()) {
                 if (userId == sessionId)
                     continue;
@@ -36,11 +36,6 @@ public class Chat implements ITerminal {
         }
     }
 
-    private String getSentenceFromBytes(byte[] data) {
-        String str = new String(data).replaceAll("[\n\t\r]", "");
-        str = str.substring(0, str.indexOf(0));
-        return str;
-    }
 
     @Override
     public void onSessionClosed(int sessionId) {

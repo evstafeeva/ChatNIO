@@ -3,6 +3,7 @@ package com.evstafeeva.client;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
 
 public class MessageClient {
     private Socket clientSocket;
@@ -36,7 +37,10 @@ public class MessageClient {
             try {
                 while (true) {
                     string = in.readLine();
-                    System.out.println(string);
+                    //отделяем 4 байта с длиной
+                    ByteBuffer byteBuffer = ByteBuffer.allocate(string.getBytes().length-4)
+                            .put(string.getBytes(), 4, string.getBytes().length-4);
+                    System.out.println(new String(byteBuffer.array()));
                 }
             } catch (SocketException e) {
                 System.out.println("Сервер был закрыт!");
@@ -54,8 +58,11 @@ public class MessageClient {
         public void run() {
             try {
                 while (true) {
-                    String message = inputUser.readLine();
-                    out.println(message);
+                    byte[] message = inputUser.readLine().getBytes();
+                    ByteBuffer byteBuffer = ByteBuffer.allocate(message.length + 4)
+                            .putInt(message.length)
+                            .put(message);
+                    out.println(new String(byteBuffer.array()));
                 }
             } catch (SocketException e) {
                 System.out.println("Сервер был закрыт!");
